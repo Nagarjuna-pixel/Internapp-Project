@@ -2,6 +2,11 @@ apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
 
+project.ext.react = [
+   enableHermes: true,
+    codegenJavaPackageName: "com.myproejct.codegen"
+]
+
 /**
  * This is the configuration block to customize your React Native Android app.
  * By default you don't need to apply any configuration, just uncomment the lines you need.
@@ -84,6 +89,9 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"
+         missingDimensionStrategy 'store', 'play'
+         missingDimensionStrategy 'react-native-camera', 'general'
+         missingDimensionStrategy 'react-native-camera', 'mlkit'  
     }
     signingConfigs {
         debug {
@@ -96,6 +104,8 @@ android {
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
+            shrinkResources false
+            minifyEnabled false
         }
         release {
             // Caution! In production, you need to generate your own keystore file.
@@ -105,11 +115,45 @@ android {
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
     }
+    lintOptions {
+        checkReleaseBuilds false
+    }
+     packagingOptions {
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/license.txt'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/notice.txt'
+        exclude 'META-INF/ASL2.0'
+        pickFirst 'lib/armeabi-v7a/libc++_shared.so'
+        pickFirst 'lib/arm64-v8a/libc++_shared.so'
+        pickFirst 'lib/x86/libc++_shared.so'
+        pickFirst 'lib/x86_64/libc++_shared.so'
+        pickFirst '**/libjsi.so'
+        pickFirst '**/libc++_shared.so'
+        exclude "**/libreact_codegen_*.so"
+    }
+    buildFeatures {
+    prefab true
+  }
+    lint {
+        baseline = file("lint-baseline.xml")
+    }
+
 }
 
 dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
+    implementation project(':react-native-gesture-handler')
+    implementation project(':react-native-permissions')
+    implementation fileTree(dir: "libs", include: ["*.jar"])
+    implementation "com.facebook.react:react-native:+"
+    implementation project(':react-native-camera')
+       implementation "androidx.appcompat:appcompat:1.3.1"
+    implementation "androidx.work:work-runtime:2.7.0"
 
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")
@@ -117,3 +161,15 @@ dependencies {
         implementation jscFlavor
     }
 }
+
+apply plugin: 'com.google.android.gms.strict-version-matcher-plugin'
+
+
+// tasks.whenTaskAdded { task ->
+//     if (task.name.contains('package') && task.name.contains('Debug')) {
+//         task.doLast {
+//             // Give it time to finish package tasks
+//             sleep(5000)
+//         }
+//     }
+// }

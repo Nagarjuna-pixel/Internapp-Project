@@ -11,6 +11,12 @@ import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
 import com.facebook.react.defaults.DefaultReactNativeHost
 import com.facebook.react.soloader.OpenSourceMergedSoMapping
 import com.facebook.soloader.SoLoader
+// import com.swmansion.gesturehandler.RNGestureHandlerPackage
+import com.zoontek.rnpermissions.RNPermissionsPackage
+// import com.nozbe.watermelondb.WorkletsPackage
+import java.lang.reflect.InvocationTargetException
+import org.reactnative.camera.RNCameraPackage
+
 
 class MainApplication : Application(), ReactApplication {
 
@@ -19,8 +25,13 @@ class MainApplication : Application(), ReactApplication {
         override fun getPackages(): List<ReactPackage> =
             PackageList(this).packages.apply {
               // Packages that cannot be autolinked yet can be added manually here, for example:
-              // add(MyReactNativePackage())
+          
+             // add(RNGestureHandlerPackage())
+              // add(RNPermissionsPackage())
+              add(RNCameraPackage())
+            
             }
+
 
         override fun getJSMainModuleName(): String = "index"
 
@@ -41,4 +52,5 @@ class MainApplication : Application(), ReactApplication {
       load()
     }
   }
+
 }
