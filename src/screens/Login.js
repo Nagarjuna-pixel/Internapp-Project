@@ -1,15 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-  ImageBackground,
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  Image,
-  StyleSheet,
-  Dimensions,
-  ActivityIndicator,
-} from 'react-native';
+import {ImageBackground,View,Text,TextInput,TouchableOpacity,Image,StyleSheet,Dimensions,ActivityIndicator,} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import axios from 'axios';
 import NetInfo from '@react-native-community/netinfo';
@@ -19,17 +9,17 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const { width, height } = Dimensions.get('window');
 
 // API URL configuration
-const API_URL = 'http://192.168.90.221:5000'; // Use 10.0.2.2:5000 for emulator if needed
+const API_URL = 'http://192.168.90.221:5000';
 
 // Create axios instance with default configuration
 const apiClient = axios.create({
   baseURL: API_URL,
-  timeout: 30000, // 30 seconds
+  // timeout: 30000, // 30 seconds to account for slow networks
   headers: {
     'Content-Type': 'application/json',
     'x-authorization': 'psg#2024@Smart@win',
   },
-  withCredentials: true,
+  // withCredentials: true,
 });
 
 // Retry logic for transient network errors
@@ -39,7 +29,7 @@ const retryRequest = async (fn, retries = 3, delay = 1000) => {
       return await fn();
     } catch (error) {
       console.log(`Retry attempt ${attempt} failed: ${error.message}`);
-      if (attempt === retries || error.response) throw error;
+      if (attempt === retries || !error.request) throw error;
       await new Promise(resolve => setTimeout(resolve, delay));
     }
   }
@@ -66,37 +56,31 @@ const LoginScreen = ({ navigation }) => {
     });
 
     // Check server connection on mount
-    // checkServerConnection();
+    checkServerConnection();
 
     return () => unsubscribe();
   }, []);
 
   // Check if server is reachable
-  // const checkServerConnection = async () => {
-  //   try {
-  //     const response = await apiClient.get('/ping');
-  //     console.log('Server is reachable:', response.data);
-  //   } catch (error) {
-  //     console.error('Server connection check failed:', {
-  //       message: error.message,
-  //       code: error.code,
-  //       request: error.request ? {
-  //         url: error.request._url,
-  //         method: error.request._method,
-  //         headers: error.request._headers,
-  //       } : null,
-  //       response: error.response ? {
-  //         status: error.response.status,
-  //         data: error.response.data,
-  //       } : null,
-  //     });
-  //     Toast.show({
-  //       type: 'error',
-  //       text1: 'Server Error',
-  //       text2: `Cannot connect to server at ${API_URL}. Please check server status.`,
-  //     });
-  //   }
-  // };
+  const checkServerConnection = async () => {
+    try {
+      await apiClient.get('/ping');
+      console.log('Server is reachable at', API_URL);
+    } catch (error) {
+      console.error('Server connection check failed:', {
+        message: error.message,
+        code: error.code,
+        request: error.request,
+        response: error.response,
+        config: error.config,
+      });
+      Toast.show({
+        type: 'error',
+        text1: 'Server Error',
+        text2: `Cannot connect to server at ${API_URL}. Please check server status.`,
+      });
+    }
+  };
 
   const handleLogin = async () => {
     setLoading(true);
@@ -152,15 +136,9 @@ const LoginScreen = ({ navigation }) => {
       console.error('Login error:', {
         message: error.message,
         code: error.code,
-        request: error.request ? {
-          url: error.request._url,
-          method: error.request._method,
-          headers: error.request._headers,
-        } : null,
-        response: error.response ? {
-          status: error.response.status,
-          data: error.response.data,
-        } : null,
+        request: error.request,
+        response: error.response,
+        config: error.config,
       });
 
       if (error.response) {
